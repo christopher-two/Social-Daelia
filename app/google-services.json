@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "389785265589",
+    "project_id": "daelia",
+    "storage_bucket": "daelia.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389785265589:android:ee5515a0845328e89d65fc",
+        "android_client_info": {
+          "package_name": "org.christophertwo.daelia.social"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "389785265589-pln488iuagbqk1rmrg71741nif6arvqs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.christophertwo.daelia.social",
+            "certificate_hash": "4478362e7d05e89b853295c1f983125cda04e627"
+          }
+        },
+        {
+          "client_id": "389785265589-ld1nnu8dmmdh21t8fv3t89rjp5q8d3ol.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHuhyTrzvg-sOL9FXsssv0oE3XauaqZow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "389785265589-ld1nnu8dmmdh21t8fv3t89rjp5q8d3ol.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

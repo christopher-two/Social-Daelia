@@ -48,14 +48,28 @@ class LoginViewModel(
     fun onAction(action: LoginAction) {
         when (action) {
             is LoginAction.ContinueWhitGoogle -> {
+                // Activar estado de carga
+                _state.update { it.copy(isLoading = true) }
+
                 viewModelScope.launch {
                     signInWithGoogleUseCase.invoke(
                         result = action.result,
                         onAuthComplete = {
-                            _state.update { it.copy(isLoggedIn = true) }
+                            _state.update {
+                                it.copy(
+                                    isLoggedIn = true,
+                                    isLoading = false
+                                )
+                            }
                         },
                         onAuthError = {
-                            _state.update { it.copy(error = it.error, isLoggedIn = false) }
+                            _state.update {
+                                it.copy(
+                                    error = it.error,
+                                    isLoggedIn = false,
+                                    isLoading = false
+                                )
+                            }
                         }
                     )
                 }

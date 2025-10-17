@@ -70,15 +70,15 @@ fun ContinueWhitGoogle(
             contentColor = colorScheme.onPrimaryContainer
         ),
         content = {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(text = "Continue with Google")
-            Spacer(modifier = Modifier.weight(.5f))
+            Spacer(modifier = Modifier.weight(.7f))
             Icon(
                 imageVector = FontAwesomeIcons.Brands.Google,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 tint = colorScheme.onPrimaryContainer,
             )
+            Spacer(modifier = Modifier.weight(.3f))
+            Text(text = "Continue with Google")
             Spacer(modifier = Modifier.weight(1f))
         },
     )

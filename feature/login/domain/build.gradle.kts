@@ -39,6 +39,7 @@ dependencies {
     //Modules
     implementation(project(":auth:api"))
     implementation(project(":session:api"))
+    implementation(project(":profile:api"))
 
     //Firebase
     implementation(platform(libs.firebase.bom))

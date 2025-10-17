@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.google.services)
-    id("com.google.devtools.ksp") version "2.1.21-2.0.1"
+    id("com.google.devtools.ksp") version "2.2.20-2.0.4"
 }
 
 android {
@@ -22,8 +22,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        getByName("debug") {
+            // Configuración de debug por defecto
+        }
+    }
+
     buildTypes {
         release {
+            // TEMPORAL: Usar certificado de debug para testing
+            // IMPORTANTE: Quita esto antes de publicar en Play Store
+            signingConfig = signingConfigs.getByName("debug")
+
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -44,10 +54,12 @@ android {
 }
 
 dependencies {
-
     //Modules
     implementation(project(":auth:api"))
     implementation(project(":auth:impl:firebase"))
+
+    implementation(project(":profile:api"))
+    implementation(project(":profile:impl:firestore"))
 
     implementation(project(":session:api"))
     implementation(project(":session:impl:datastore"))
@@ -57,6 +69,9 @@ dependencies {
 
     implementation(project(":feature:login:presentation"))
     implementation(project(":feature:login:domain"))
+
+    implementation(project(":feature:home:presentation"))
+    implementation(project(":feature:home:domain"))
 
     //COMPOSE
     implementation(libs.androidx.core.ktx)

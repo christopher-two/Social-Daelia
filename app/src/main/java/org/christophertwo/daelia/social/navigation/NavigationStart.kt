@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.christophertwo.daelia.core.common.RoutesStart
+import org.christophertwo.daelia.feature.home.presentation.HomeRoot
 import org.christophertwo.daelia.feature.login.presentation.LoginRoot
 import org.koin.androidx.compose.koinViewModel
 
@@ -24,7 +25,9 @@ fun NavigationStart(
             )
         }
         composable<RoutesStart.Home> {
-
+            HomeRoot(
+                viewModel = koinViewModel()
+            )
         }
     }
 }

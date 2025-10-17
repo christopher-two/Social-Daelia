@@ -23,6 +23,7 @@ object NetworkLayoutCalculator {
     fun calculateNetworkLayout(
         mainUser: UserFirestore?,
         friends: List<UserFirestore>,
+        availableUsers: List<UserFirestore>,
         canvasWidth: Float,
         canvasHeight: Float
     ): Pair<List<NetworkNode>, List<NetworkConnection>> {
@@ -37,61 +38,73 @@ object NetworkLayoutCalculator {
         if (mainUser != null) {
             val mainNode = NetworkNode(
                 user = mainUser,
-                // Restar la mitad del tamaño del nodo para centrarlo correctamente
                 position = Offset(centerX - (MAIN_USER_SIZE / 2f), centerY - (MAIN_USER_SIZE / 2f)),
                 isMainUser = true
             )
             nodes.add(mainNode)
         }
 
-        // Calcular posiciones de amigos en círculo alrededor del usuario principal
-        val radius = 200f
-        val angleStep = (2 * Math.PI) / friends.size
+        // Combinar amigos y usuarios disponibles
+        val allUsers = friends + availableUsers
+        val radius = 220f
+        val angleStep = (2 * Math.PI) / allUsers.size
 
-        friends.forEachIndexed { index, friend ->
+        allUsers.forEachIndexed { index, user ->
             val angle = angleStep * index
             val x = centerX + (radius * cos(angle)).toFloat() - (FRIEND_SIZE / 2f)
             val y = centerY + (radius * sin(angle)).toFloat() - (FRIEND_SIZE / 2f)
 
-            val friendNode = NetworkNode(
-                user = friend,
+            val userNode = NetworkNode(
+                user = user,
                 position = Offset(x, y),
                 isMainUser = false
             )
-            nodes.add(friendNode)
+            nodes.add(userNode)
 
-            // Crear conexión entre usuario principal y amigo
-            // Las conexiones van del centro del nodo principal al centro del amigo
-            if (mainUser != null) {
+            // Crear conexión SOLO si es un amigo
+            val isFriend = friends.any { friend ->
+                friend.name == user.name && friend.imageUrl == user.imageUrl
+            }
+
+            if (mainUser != null && isFriend) {
+                // Verificar si es amistad mutua
+                val isMutualFriend = user.friends?.any { friend ->
+                    friend.name == mainUser.name && friend.imageUrl == mainUser.imageUrl
+                } ?: false
+
                 connections.add(
                     NetworkConnection(
                         start = Offset(centerX, centerY),
-                        end = Offset(x + (FRIEND_SIZE / 2f), y + (FRIEND_SIZE / 2f))
+                        end = Offset(x + (FRIEND_SIZE / 2f), y + (FRIEND_SIZE / 2f)),
+                        isMutualFriend = isMutualFriend
                     )
                 )
             }
 
-            // Agregar amigos de segundo nivel
-            friend.friends?.take(2)?.forEachIndexed { subIndex, subFriend ->
-                val subRadius = 120f
-                val subAngle = angle + (subIndex - 0.5) * 0.5
-                val subX = x + (FRIEND_SIZE / 2f) + (subRadius * cos(subAngle)).toFloat() - (SUB_FRIEND_SIZE / 2f)
-                val subY = y + (FRIEND_SIZE / 2f) + (subRadius * sin(subAngle)).toFloat() - (SUB_FRIEND_SIZE / 2f)
+            // Agregar amigos de segundo nivel SOLO para amigos directos
+            if (isFriend) {
+                user.friends?.take(2)?.forEachIndexed { subIndex, subFriend ->
+                    val subRadius = 120f
+                    val subAngle = angle + (subIndex - 0.5) * 0.5
+                    val subX = x + (FRIEND_SIZE / 2f) + (subRadius * cos(subAngle)).toFloat() - (SUB_FRIEND_SIZE / 2f)
+                    val subY = y + (FRIEND_SIZE / 2f) + (subRadius * sin(subAngle)).toFloat() - (SUB_FRIEND_SIZE / 2f)
 
-                val subFriendNode = NetworkNode(
-                    user = subFriend,
-                    position = Offset(subX, subY),
-                    isMainUser = false
-                )
-                nodes.add(subFriendNode)
-
-                // Conexión entre amigo y su amigo
-                connections.add(
-                    NetworkConnection(
-                        start = Offset(x + (FRIEND_SIZE / 2f), y + (FRIEND_SIZE / 2f)),
-                        end = Offset(subX + (SUB_FRIEND_SIZE / 2f), subY + (SUB_FRIEND_SIZE / 2f))
+                    val subFriendNode = NetworkNode(
+                        user = subFriend,
+                        position = Offset(subX, subY),
+                        isMainUser = false
                     )
-                )
+                    nodes.add(subFriendNode)
+
+                    // Conexión entre amigo y su amigo
+                    connections.add(
+                        NetworkConnection(
+                            start = Offset(x + (FRIEND_SIZE / 2f), y + (FRIEND_SIZE / 2f)),
+                            end = Offset(subX + (SUB_FRIEND_SIZE / 2f), subY + (SUB_FRIEND_SIZE / 2f)),
+                            isMutualFriend = false
+                        )
+                    )
+                }
             }
         }
 

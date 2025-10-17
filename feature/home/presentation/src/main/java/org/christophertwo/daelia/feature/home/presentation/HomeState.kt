@@ -6,6 +6,7 @@ data class HomeState(
     val user: UserFirestore? = null,
     val friends: List<UserFirestore> = emptyList(),
     val availableUsers: List<UserFirestore> = emptyList(),
+    val selectedUserForDialog: UserFirestore? = null,
     val isLoading: Boolean = false
 )
 

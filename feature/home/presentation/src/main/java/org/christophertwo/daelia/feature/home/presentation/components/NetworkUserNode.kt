@@ -2,6 +2,7 @@ package org.christophertwo.daelia.feature.home.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.offset
@@ -27,6 +28,7 @@ import org.christophertwo.daelia.feature.home.presentation.model.NetworkNode
 @Composable
 fun NetworkUserNode(
     node: NetworkNode,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -61,6 +63,13 @@ fun NetworkUserNode(
                     else
                         MaterialTheme.colorScheme.secondary,
                     shape = CircleShape
+                )
+                .then(
+                    if (onClick != null && !node.isMainUser) {
+                        Modifier.clickable { onClick() }
+                    } else {
+                        Modifier
+                    }
                 ),
             contentAlignment = Alignment.Center
         ) {

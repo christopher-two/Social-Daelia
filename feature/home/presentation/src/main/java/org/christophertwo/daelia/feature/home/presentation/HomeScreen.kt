@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.christophertwo.daelia.core.ui.theme.socialTheme
+import org.christophertwo.daelia.feature.home.presentation.components.AddFriendDialog
 import org.christophertwo.daelia.feature.home.presentation.components.SocialNetworkCanvas
 import org.christophertwo.daelia.profile.api.UserFirestore
 
@@ -26,7 +27,7 @@ fun HomeRoot(
 @Composable
 private fun HomeScreen(
     state: HomeState,
-    @Suppress("UNUSED_PARAMETER") onAction: (HomeAction) -> Unit,
+    onAction: (HomeAction) -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxSize()
@@ -34,8 +35,24 @@ private fun HomeScreen(
         SocialNetworkCanvas(
             mainUser = state.user,
             friends = state.friends,
-            availableUsers = state.availableUsers
+            availableUsers = state.availableUsers,
+            onUserClick = { user ->
+                onAction(HomeAction.OnUserClick(user))
+            }
         )
+
+        // Mostrar diálogo de agregar amigo
+        state.selectedUserForDialog?.let { user ->
+            AddFriendDialog(
+                user = user,
+                onConfirm = {
+                    onAction(HomeAction.AddFriend(user))
+                },
+                onDismiss = {
+                    onAction(HomeAction.DismissDialog)
+                }
+            )
+        }
     }
 }
 

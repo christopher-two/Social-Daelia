@@ -13,16 +13,18 @@ import org.christophertwo.daelia.feature.home.presentation.model.NetworkConnecti
 @Composable
 fun NetworkConnectionLines(
     connections: List<NetworkConnection>,
-    modifier: Modifier = Modifier,
-    lineColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+    modifier: Modifier = Modifier
 ) {
+    val normalLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+    val mutualFriendColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+
     Canvas(modifier = modifier.fillMaxSize()) {
         connections.forEach { connection ->
             drawLine(
-                color = lineColor,
+                color = if (connection.isMutualFriend) mutualFriendColor else normalLineColor,
                 start = connection.start,
                 end = connection.end,
-                strokeWidth = 2f,
+                strokeWidth = if (connection.isMutualFriend) 3f else 2f,
                 cap = StrokeCap.Round,
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
             )

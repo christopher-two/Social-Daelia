@@ -4,6 +4,7 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,40 +25,39 @@ fun SocialNetworkCanvas(
     mainUser: UserFirestore?,
     friends: List<UserFirestore>,
     availableUsers: List<UserFirestore>,
+    onUserClick: (UserFirestore) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var nodes by remember { mutableStateOf<List<NetworkNode>>(emptyList()) }
     var connections by remember { mutableStateOf<List<NetworkConnection>>(emptyList()) }
+    var canvasSize by remember { mutableStateOf(0f to 0f) }
 
     // Estados para pan y zoom
     var offset by remember { mutableStateOf(Offset.Zero) }
     var scale by remember { mutableFloatStateOf(1f) }
+
+    // Recalcular layout cuando cambian los amigos o usuarios disponibles
+    LaunchedEffect(friends, availableUsers, canvasSize) {
+        val (width, height) = canvasSize
+        if (width > 0 && height > 0) {
+            val (calculatedNodes, calculatedConnections) = NetworkLayoutCalculator.calculateNetworkLayout(
+                mainUser = mainUser,
+                friends = friends,
+                availableUsers = availableUsers,
+                canvasWidth = width,
+                canvasHeight = height
+            )
+            nodes = calculatedNodes
+            connections = calculatedConnections
+        }
+    }
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .onSizeChanged { size ->
                 if (size.width > 0 && size.height > 0) {
-                    // Decidir qué layout usar según si hay amigos o usuarios disponibles
-                    val (calculatedNodes, calculatedConnections) = if (friends.isNotEmpty()) {
-                        // Si hay amigos, mostrar red con conexiones
-                        NetworkLayoutCalculator.calculateNetworkLayout(
-                            mainUser = mainUser,
-                            friends = friends,
-                            canvasWidth = size.width.toFloat(),
-                            canvasHeight = size.height.toFloat()
-                        )
-                    } else {
-                        // Si no hay amigos, mostrar usuarios disponibles SIN conexiones
-                        NetworkLayoutCalculator.calculateAvailableUsersLayout(
-                            mainUser = mainUser,
-                            availableUsers = availableUsers,
-                            canvasWidth = size.width.toFloat(),
-                            canvasHeight = size.height.toFloat()
-                        )
-                    }
-                    nodes = calculatedNodes
-                    connections = calculatedConnections
+                    canvasSize = size.width.toFloat() to size.height.toFloat()
                 }
             }
             .pointerInput(Unit) {
@@ -89,7 +89,14 @@ fun SocialNetworkCanvas(
 
             // Dibujar nodos de usuarios
             nodes.forEach { node ->
-                NetworkUserNode(node = node)
+                NetworkUserNode(
+                    node = node,
+                    onClick = if (!node.isMainUser) {
+                        { onUserClick(node.user) }
+                    } else {
+                        null
+                    }
+                )
             }
         }
     }

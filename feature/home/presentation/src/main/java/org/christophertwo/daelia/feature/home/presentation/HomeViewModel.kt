@@ -12,11 +12,13 @@ import kotlinx.coroutines.launch
 import org.christophertwo.daelia.feature.home.domain.GetAvailableUsersUseCase
 import org.christophertwo.daelia.feature.home.domain.GetFriendsUseCase
 import org.christophertwo.daelia.feature.home.domain.GetUserUseCase
+import org.christophertwo.daelia.feature.home.domain.UpdateFriendsUseCase
 
 class HomeViewModel(
     private val getUserUseCase: GetUserUseCase,
     private val getFriendsUseCase: GetFriendsUseCase,
     private val getAvailableUsersUseCase: GetAvailableUsersUseCase,
+    private val updateFriendsUseCase: UpdateFriendsUseCase,
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -48,36 +50,31 @@ class HomeViewModel(
                 val friends = getFriendsUseCase.invoke()
                 Log.d("HomeViewModel", "Friends from Firestore: ${friends.size}")
 
-                if (friends.isEmpty()) {
-                    // Si no tiene amigos, obtener todos los usuarios disponibles
-                    Log.d("HomeViewModel", "No friends found, loading available users")
-                    val availableUsers = getAvailableUsersUseCase.invoke()
-                    Log.d("HomeViewModel", "Available users: ${availableUsers.size}")
+                // Obtener todos los usuarios disponibles
+                Log.d("HomeViewModel", "Loading available users")
+                val allUsers = getAvailableUsersUseCase.invoke()
+                Log.d("HomeViewModel", "All users: ${allUsers.size}")
 
-                    // Si tampoco hay usuarios en Firestore, usar datos dummy
-                    val finalUsers = availableUsers.ifEmpty {
-                        Log.d("HomeViewModel", "No available users, using dummy data")
-                        getDummyFriends()
-                    }
+                // Si no hay usuarios en Firestore, usar datos dummy
+                val usersToShow = allUsers.ifEmpty {
+                    Log.d("HomeViewModel", "No users in Firestore, using dummy data")
+                    getDummyFriends()
+                }
 
-                    _state.update {
-                        it.copy(
-                            user = user,
-                            friends = emptyList(),
-                            availableUsers = finalUsers,
-                            isLoading = false
-                        )
+                // Filtrar usuarios que ya son amigos
+                val availableUsers = usersToShow.filter { availableUser ->
+                    friends.none { friend ->
+                        friend.name == availableUser.name && friend.imageUrl == availableUser.imageUrl
                     }
-                } else {
-                    // Si tiene amigos, mostrar la red con conexiones
-                    _state.update {
-                        it.copy(
-                            user = user,
-                            friends = friends,
-                            availableUsers = emptyList(),
-                            isLoading = false
-                        )
-                    }
+                }
+
+                _state.update {
+                    it.copy(
+                        user = user,
+                        friends = friends,
+                        availableUsers = availableUsers,
+                        isLoading = false
+                    )
                 }
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error loading user data", e)
@@ -94,7 +91,65 @@ class HomeViewModel(
     }
 
     fun onAction(action: HomeAction) {
-        // Manejar acciones futuras aquí
+        when (action) {
+            is HomeAction.OnUserClick -> {
+                // Verificar si el usuario ya es amigo
+                val isAlreadyFriend = _state.value.friends.any { friend ->
+                    friend.name == action.user.name && friend.imageUrl == action.user.imageUrl
+                }
+
+                // Solo mostrar diálogo si NO es amigo
+                if (!isAlreadyFriend) {
+                    _state.update { it.copy(selectedUserForDialog = action.user) }
+                } else {
+                    Log.d("HomeViewModel", "User is already a friend: ${action.user.name}")
+                }
+            }
+            is HomeAction.AddFriend -> {
+                // Agregar amigo
+                viewModelScope.launch {
+                    try {
+                        val currentFriends = _state.value.friends.toMutableList()
+
+                        // Verificar nuevamente que no sea amigo (por si acaso)
+                        val isAlreadyFriend = currentFriends.any { friend ->
+                            friend.name == action.user.name && friend.imageUrl == action.user.imageUrl
+                        }
+
+                        if (isAlreadyFriend) {
+                            Log.d("HomeViewModel", "User is already a friend, skipping")
+                            _state.update { it.copy(selectedUserForDialog = null) }
+                            return@launch
+                        }
+
+                        // Agregar el nuevo amigo a la lista
+                        currentFriends.add(action.user)
+
+                        // Actualizar en Firestore
+                        updateFriendsUseCase.invoke(currentFriends)
+
+                        Log.d("HomeViewModel", "Friend added: ${action.user.name}")
+
+                        // Actualizar el estado local
+                        _state.update {
+                            it.copy(
+                                friends = currentFriends,
+                                availableUsers = it.availableUsers.filter { user ->
+                                    user.name != action.user.name || user.imageUrl != action.user.imageUrl
+                                },
+                                selectedUserForDialog = null
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Log.e("HomeViewModel", "Error adding friend", e)
+                        _state.update { it.copy(selectedUserForDialog = null) }
+                    }
+                }
+            }
+            is HomeAction.DismissDialog -> {
+                _state.update { it.copy(selectedUserForDialog = null) }
+            }
+        }
     }
 
 }

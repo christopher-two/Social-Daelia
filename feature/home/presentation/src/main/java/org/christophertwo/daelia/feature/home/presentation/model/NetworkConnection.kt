@@ -7,6 +7,6 @@ import androidx.compose.ui.geometry.Offset
  */
 data class NetworkConnection(
     val start: Offset,
-    val end: Offset
+    val end: Offset,
+    val isMutualFriend: Boolean = false // Si ambos se tienen como amigos
 )
-

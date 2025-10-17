@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlinx.serialization)
 }
 
 android {
-    namespace = "org.christophertwo.daelia.feature.home.presentation"
+    namespace = "org.christophertwo.daelia.profile.impl.firestore"
     compileSdk {
         version = release(36)
     }
@@ -37,43 +36,17 @@ android {
 }
 
 dependencies {
-    //Module
-    implementation(project(":core:ui"))
-    implementation(project(":core:common"))
-
+    //Modules
     implementation(project(":profile:api"))
-
-    implementation(project(":feature:home:domain"))
-
-    //COMPOSE
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.appcompat)
 
     //Firebase
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
-
-    //Coil
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
+    implementation(libs.firebase.auth)
 
     //Kotlinx
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)
-
-    //Utils
-    implementation(libs.composeIcons.fontAwesome)
 
     //TEST
     testImplementation(libs.junit)

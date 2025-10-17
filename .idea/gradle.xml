@@ -20,10 +20,15 @@
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/home" />
+            <option value="$PROJECT_DIR$/feature/home/domain" />
             <option value="$PROJECT_DIR$/feature/home/presentation" />
             <option value="$PROJECT_DIR$/feature/login" />
             <option value="$PROJECT_DIR$/feature/login/domain" />
             <option value="$PROJECT_DIR$/feature/login/presentation" />
+            <option value="$PROJECT_DIR$/profile" />
+            <option value="$PROJECT_DIR$/profile/api" />
+            <option value="$PROJECT_DIR$/profile/impl" />
+            <option value="$PROJECT_DIR$/profile/impl/firestore" />
             <option value="$PROJECT_DIR$/session" />
             <option value="$PROJECT_DIR$/session/api" />
             <option value="$PROJECT_DIR$/session/impl" />
